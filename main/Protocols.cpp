@@ -143,7 +143,31 @@ void Protocols::sendNmeaXCVCmd( const char *item, float value ){
 	}
 }
 
-void Protocols::sendNMEA( proto_t proto, char* str, float baro, float dp, float te, float temp, float ias, float tas,
+
+/**
+ * @brief Protocols::sendNMEA
+ * @param proto
+ * @param str
+ * @param baro
+ * @param dp
+ * @param te
+ * @param temp
+ * @param ias_kph
+ * @param tas
+ * @param mc
+ * @param bugs
+ * @param aballast
+ * @param cruise
+ * @param alt
+ * @param validTemp
+ * @param acc_x
+ * @param acc_y
+ * @param acc_z
+ * @param gx
+ * @param gy
+ * @param gz
+ */
+void Protocols::sendNMEA( proto_t proto, char* str, float baro, float dp, float te, float temp, float ias_kph, float tas,
 		float mc, int bugs, float aballast, bool cruise, float alt, bool validTemp, float acc_x, float acc_y, float acc_z, float gx, float gy, float gz ){
 	if( !validTemp )
 		temp=0;
@@ -192,7 +216,7 @@ void Protocols::sendNMEA( proto_t proto, char* str, float baro, float dp, float 
 		else
 			sprintf(str,"$POV,P,%0.1f,Q,%0.1f,E,%0.1f",baro,dp,te);
 	}
-	else if ( proto == P_BORGELT ) {
+    else if ( proto == P_BORGELT ) {
 		/*
 			Sentence has following format:
 			$PBB50,AAA,BBB.B,C.C,DDDDD,EE,F.FF,G,HH*CHK crlf
@@ -206,7 +230,7 @@ void Protocols::sendNMEA( proto_t proto, char* str, float baro, float dp, float 
 			HH = Outside airtemp in degrees celcius ( may have leading negative sign )
 			CHK = standard NMEA checksum
 		 */
-		float iaskn = Units::kmh2knots( ias );
+        float iaskn = Units::kmh2knots( ias_kph );
 		sprintf(str,"$PBB50,%03d,%3.1f,%1.1f,%d,%d,%1.2f,%1d,%2d", (int)(Units::kmh2knots(tas)+0.5), Units::ms2knots(te), Units::mcval2knots(mc), (int)((iaskn*iaskn)+0.5), bugs, (aballast+100)/100.0, !cruise, (int)(temp+0.5) );
 	}
 	else if( proto == P_CAMBRIDGE ){
@@ -266,7 +290,7 @@ void Protocols::sendNMEA( proto_t proto, char* str, float baro, float dp, float 
 		sprintf(str, "$PEYI,%.2f,%.2f,,,,%.2f,%.2f,%.2f,,", roll, pitch,acc_x,acc_y,acc_z );
 	}
 	else if( gflags.haveMPU && attitude_indicator.get() && (proto == P_AHRS_APENV1) ) {  // LEVIL_AHRS
-		sprintf(str, "$APENV1,%d,%d,0,0,0,%d", (int)(Units::kmh2knots(ias)+0.5),(int)(Units::meters2feet(alt)+0.5),(int)(Units::ms2fpm(te)+0.5));
+        sprintf(str, "$APENV1,%d,%d,0,0,0,%d", (int)(Units::kmh2knots(ias_kph)+0.5),(int)(Units::meters2feet(alt)+0.5),(int)(Units::ms2fpm(te)+0.5));
 	}
 	else if( gflags.haveMPU && attitude_indicator.get() && (proto == P_AHRS_RPYL) ) {   // LEVIL_AHRS  $RPYL,Roll,Pitch,MagnHeading,SideSlip,YawRate,G,errorcode,
 		sprintf(str, "$RPYL,%d,%d,%d,0,0,%d,0",
@@ -285,8 +309,43 @@ void Protocols::sendNMEA( proto_t proto, char* str, float baro, float dp, float 
 		 * aaa:   TAS knots 0-200
 		 */
 		sprintf(str, "$PTAS1,%d,%d,%d,%d", int((Units::ms2knots(te)*10)+200), 0, int(Units::meters2feet(alt)+2000), int(Units::kmh2knots(tas)+0.5) );
-	}
-	else {
+    }
+    else if( proto == P_NAVITER ) {
+        /*
+         * $PTAS1,xxx,yyy,zzzzz,aaa*CS<CR><LF>
+         * xxx:   CV or current vario. =vario*10+200 range 0-400(display +/-20.0 knots)
+         * yyy:   AV or average vario. =vario*10+200 range 0-400(display +/-20.0 knots)
+         * zzzzz: Barometric altitude in feet +2000
+         * aaa:   TAS knots 0-200
+         */
+        /*
+         * $LXWP0,Y,222.3,1665.5,1.71,,,,,,239,174,10.1
+
+         * 0 logger_stored (Y/N)
+         * 1 IAS (kph)
+         * 2 baroaltitude (m)
+         * 3-8 vario (m/s) (last 6 measurements in last second)
+         * 9 heading of plane
+         * 10 windcourse (deg)
+         * 11 windspeed (kph)
+         */
+        sprintf(str,
+                "$LXWP0,%s,%d,%d,%f,%f,%f,%f,%f,%f,%d,%d,%d",
+                "N",
+                int(ias_kph+0.5),  // IAS, in [kph]
+                int(alt+0.5),  // baro altitude, in [m]
+                te,  // in [m/s]
+                te,  // in [m/s]
+                te,
+                te,
+                te,
+                te,
+                int(IMU::getYaw()+0.5),  // Airplane course
+                0,  // Wind direction, in [deg]
+                0   // Wind speed, in [kph]
+                );
+    }
+    else {
 		ESP_LOGW(FNAME,"Not supported protocol %d", nmea_protocol.get() );
 	}
 	int cs = calcNMEACheckSum(&str[1]);

@@ -2027,6 +2027,7 @@ void SetupMenu::system_menu_create( MenuEntry *sye ){
 	nmea->addEntry( PROGMEM"Borgelt");
 	nmea->addEntry( PROGMEM"Cambridge");
 	nmea->addEntry( PROGMEM"XCVario");
+	nmea->addEntry( PROGMEM"Naviter");
 	nmea->addEntry( PROGMEM"Disable");
 }
 
