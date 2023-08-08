@@ -330,16 +330,11 @@ void Protocols::sendNMEA( proto_t proto, char* str, float baro, float dp, float 
          * 11 windspeed (kph)
          */
         sprintf(str,
-                "$LXWP0,%s,%d,%d,%f,%f,%f,%f,%f,%f,%d,%d,%d",
+                "$LXWP0,%s,%d,%d,%f,,,,,,%d,%d,%d",
                 "N",
                 int(ias_kph+0.5),  // IAS, in [kph]
                 int(alt+0.5),  // baro altitude, in [m]
                 te,  // in [m/s]
-                te,  // in [m/s]
-                te,
-                te,
-                te,
-                te,
                 int(IMU::getYaw()+0.5),  // Airplane course
                 0,  // Wind direction, in [deg]
                 0   // Wind speed, in [kph]
