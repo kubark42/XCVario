@@ -711,7 +711,7 @@ void SetupMenu::delete_subtree(){
 void SetupMenu::press(){
 	if( (selected != this) || focus )
 		return;
-	ESP_LOGI(FNAME,"press() active_srceen %d, pressed %d inSet %d  subtree_created: %d mptr: %p", active_screen, pressed, gflags.inSetup, subtree_created, menu_create_ptr );
+	ESP_LOGI(FNAME,"press() active_screen %d, pressed %d inSet %d  subtree_created: %d mptr: %p", active_screen, pressed, gflags.inSetup, subtree_created, menu_create_ptr );
 	create_subtree();
 	if( !gflags.inSetup ){
 		active_screen = 0;
