@@ -142,7 +142,31 @@ void Protocols::sendNmeaXCVCmd( const char *item, float value ){
 	}
 }
 
-void Protocols::sendNMEA( proto_t proto, char* str, float baro, float dp, float te, float temp, float ias, float tas,
+
+/**
+ * @brief Protocols::sendNMEA
+ * @param proto
+ * @param str
+ * @param baro
+ * @param dp
+ * @param te
+ * @param temp
+ * @param ias_kph
+ * @param tas
+ * @param mc
+ * @param bugs
+ * @param aballast
+ * @param cruise
+ * @param alt
+ * @param validTemp
+ * @param acc_x
+ * @param acc_y
+ * @param acc_z
+ * @param gx
+ * @param gy
+ * @param gz
+ */
+void Protocols::sendNMEA( proto_t proto, char* str, float baro, float dp, float te, float temp, float ias_kph, float tas,
 		float mc, int bugs, float aballast, bool cruise, float alt, bool validTemp, float acc_x, float acc_y, float acc_z, float gx, float gy, float gz ){
 	if( !validTemp )
 		temp=0;
@@ -205,7 +229,7 @@ void Protocols::sendNMEA( proto_t proto, char* str, float baro, float dp, float 
 			HH = Outside airtemp in degrees celcius ( may have leading negative sign )
 			CHK = standard NMEA checksum
 		 */
-		float iaskn = Units::kmh2knots( ias );
+		float iaskn = Units::kmh2knots( ias_kph );
 		sprintf(str,"$PBB50,%03d,%3.1f,%1.1f,%d,%d,%1.2f,%1d,%2d", (int)(Units::kmh2knots(tas)+0.5), Units::ms2knots(te), Units::mcval2knots(mc), (int)((iaskn*iaskn)+0.5), bugs, (aballast+100)/100.0, !cruise, (int)(temp+0.5) );
 	}
 	else if( proto == P_CAMBRIDGE ){
@@ -265,7 +289,7 @@ void Protocols::sendNMEA( proto_t proto, char* str, float baro, float dp, float 
 		sprintf(str, "$PEYI,%.2f,%.2f,,,,%.2f,%.2f,%.2f,,", roll, pitch,acc_x,acc_y,acc_z );
 	}
 	else if( gflags.haveMPU && attitude_indicator.get() && (proto == P_AHRS_APENV1) ) {  // LEVIL_AHRS
-		sprintf(str, "$APENV1,%d,%d,0,0,0,%d", (int)(Units::kmh2knots(ias)+0.5),(int)(Units::meters2feet(alt)+0.5),(int)(Units::ms2fpm(te)+0.5));
+		sprintf(str, "$APENV1,%d,%d,0,0,0,%d", (int)(Units::kmh2knots(ias_kph)+0.5),(int)(Units::meters2feet(alt)+0.5),(int)(Units::ms2fpm(te)+0.5));
 	}
 	else if( gflags.haveMPU && attitude_indicator.get() && (proto == P_AHRS_RPYL) ) {   // LEVIL_AHRS  $RPYL,Roll,Pitch,MagnHeading,SideSlip,YawRate,G,errorcode,
 		sprintf(str, "$RPYL,%d,%d,%d,0,0,%d,0",
