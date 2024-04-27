@@ -309,6 +309,41 @@ void Protocols::sendNMEA( proto_t proto, char* str, float baro, float dp, float 
 		 */
 		sprintf(str, "$PTAS1,%d,%d,%d,%d", int((Units::ms2knots(te)*10)+200), 0, int(Units::meters2feet(alt)+2000), int(Units::kmh2knots(tas)+0.5) );
 	}
+    else if( proto == P_NAVITER ) {
+        /*
+         * $PTAS1,xxx,yyy,zzzzz,aaa*CS<CR><LF>
+         * xxx:   CV or current vario. =vario*10+200 range 0-400(display +/-20.0 knots)
+         * yyy:   AV or average vario. =vario*10+200 range 0-400(display +/-20.0 knots)
+         * zzzzz: Barometric altitude in feet +2000
+         * aaa:   TAS knots 0-200
+         */
+        /*
+         * $LXWP0,Y,222.3,1665.5,1.71,,,,,,239,174,10.1
+
+         * 0 logger_stored (Y/N)
+         * 1 IAS (kph)
+         * 2 baroaltitude (m)
+         * 3-8 vario (m/s) (last 6 measurements in last second)
+         * 9 heading of plane
+         * 10 windcourse (deg)
+         * 11 windspeed (kph)
+         */
+        sprintf(str,
+                "$LXWP0,%s,%d,%d,%f,%f,%f,%f,%f,%f,%d,%d,%d",
+                "N",
+                int(ias_kph+0.5),  // IAS, in [kph]
+                int(alt+0.5),  // baro altitude, in [m]
+                te,  // in [m/s]
+                te,  // in [m/s]
+                te,
+                te,
+                te,
+                te,
+                int(IMU::getYaw()+0.5),  // Airplane course
+                0,  // Wind direction, in [deg]
+                0   // Wind speed, in [kph]
+                );
+    }
 	else {
 		ESP_LOGW(FNAME,"Not supported protocol %d", nmea_protocol.get() );
 	}
