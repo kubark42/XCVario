@@ -150,6 +150,8 @@ static const t_polar polars_default_arr[] = {
 	{ 2210, "SFS 31",35.8,85,-0.85,127,-1.5,150,-2.15,0,12.00},
 	{ 2220, "Silent Club",25.2,65,-0.62,115,-1.05,175,-3.2,0,10.3},
 	{ 2222, "Std Austria S",22.0,70,-0.70,118,-1.0,145,-1.5,0,13.5},
+	{ 2223, "Stemme S6",44.3,80,-0.70,150,-2.45,200,-5.0,97,17.42},
+	{ 2224, "Stemme S6a",44.3,83,-0.93,122,-1.27,156,-2.29,97,17.42},
 	{ 2225, "Stratos II",17.17,50,-0.95,65,-1.13,100,-2.5,50,16.3},
 	{ 2230, "Sunrise II",26.0,65,-1.2,100,-1.8,130,-3.0,0,15.4},
 	{ 2235, "Song 120",23.73,70,-1.0,85,-1.2,120,-3.0,0,9.9},
@@ -186,7 +188,7 @@ void Polars::begin(){
 		ESP_LOGI( FNAME,"Need first to initialize unique glider type index: %d", polars_default_arr[ glider_type.get() ].index );
 		glider_type_index.set(  polars_default_arr[ glider_type.get() ].index );
 	}
-    int unique_glider_index = glider_type_index.get();
+	int unique_glider_index = glider_type_index.get();
 	if( polars_default_arr[ glider_type.get() ].index != unique_glider_index ){
 		ESP_LOGI( FNAME,"Unique index missmatch, migrate index after polar DB change");
 		for( int p=0; p<numPolars(); p++ ){
